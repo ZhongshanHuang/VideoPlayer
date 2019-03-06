@@ -22,9 +22,11 @@ class PoAVPlayerResourceLoader {
     
     private var runningRequest: AVAssetResourceLoadingRequest?
     private var requestTasks: [PoAVPlayerResourceRequestTask] = []
-    private let ioQueue: DispatchQueue = DispatchQueue(label: "com.PoAVPlayerResourceLoader.www")
     private let fileHandler: PoAVPlayerResourceCacheFileHandler
     private let sessionDelegate = PoAVPlayerSessionDelegate()
+    private var ioQueue: DispatchQueue {
+        return PoAVPlayerCacheManager.ioQueue
+    }
     
     // MARK: - Initializator
     
