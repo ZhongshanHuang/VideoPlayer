@@ -25,8 +25,7 @@ class PoAVPlayerControlView: UIView {
     private let durationTimeLabel: UILabel = UILabel()
     private let playButton: UIButton = UIButton()
     private let fullScreenButton: UIButton = UIButton()
-    private let loadedProgress: UIProgressView = UIProgressView()
-    private let playedProgress: UISlider = UISlider()
+    private let progress: PoProgressView = PoProgressView()
     
     
     init(player: PoAVPlayer) {
@@ -78,17 +77,10 @@ class PoAVPlayerControlView: UIView {
         currentTimeLabel.font = UIFont.systemFont(ofSize: 13)
         bottomToolBar.addSubview(currentTimeLabel)
         
-        // 缓冲进度
-        loadedProgress.progressTintColor = UIColor(white: 0.5, alpha: 1.0)
-        loadedProgress.isUserInteractionEnabled = false
-        bottomToolBar.addSubview(loadedProgress)
-        
-        // 播放进度
-        playedProgress.isContinuous = false
-        playedProgress.minimumTrackTintColor = UIColor(red: 0, green: 0, blue: 1, alpha: 0.7)
-        playedProgress.maximumTrackTintColor = UIColor.clear
-        playedProgress.addTarget(self, action: #selector(PoAVPlayerControlView.playedProgressHandle(_:)), for: .valueChanged)
-        bottomToolBar.addSubview(playedProgress)
+        // 播放/缓冲进度
+        progress.isContinuous = false
+        progress.addTarget(self, action: #selector(PoAVPlayerControlView.progressChangeHandle(_:)), for: .valueChanged)
+        bottomToolBar.addSubview(progress)
         
         // 总播放时间
         durationTimeLabel.text = "00:00:00"
@@ -137,8 +129,8 @@ class PoAVPlayerControlView: UIView {
         // 已缓冲进度
         let width: CGFloat = bounds.width - padding - playButton.bounds.width - padding - currentTimeLabel.bounds.width - padding - padding - durationTimeLabel.bounds.width - padding - fullScreenButton.bounds.width - padding
         
-        loadedProgress.frame = CGRect(x: currentTimeLabel.frame.maxX + padding, y: (bottomToolBar.bounds.height - 2)/2, width: width, height: 2)
-        playedProgress.frame = CGRect(x: currentTimeLabel.frame.maxX + padding, y: (bottomToolBar.bounds.height - 60)/2, width: width, height: 60)
+        progress.frame = CGRect(x: currentTimeLabel.frame.maxX + padding, y: (bottomToolBar.bounds.height - 20)/2, width: width, height: 20)
+//        playedProgress.frame = CGRect(x: currentTimeLabel.frame.maxX + padding, y: (bottomToolBar.bounds.height - 60)/2, width: width, height: 60)
     }
     
     // MARK: - selector
@@ -162,9 +154,9 @@ class PoAVPlayerControlView: UIView {
     }
     
     @objc
-    private func playedProgressHandle(_ sender: UISlider) {
+    private func progressChangeHandle(_ sender: PoProgressView) {
         if player.isReadyToPlay {
-            let target = Double(playedProgress.value) * player.duration
+            let target = Double(sender.sliderValue) * player.duration
 
             player.pause()
             playButton.isSelected = false
@@ -210,7 +202,7 @@ extension PoAVPlayerControlView: PoAVPlayerDelegate {
     func avplayer(_ player: PoAVPlayer, loadedTimeRange range: CMTimeRange) {
         let loaded = range.end.seconds
         let duration = player.duration
-        loadedProgress.setProgress(Float(loaded / duration), animated: true)
+        progress.progressValue = Float(loaded / duration)
     }
     
     /// 缓冲数据是否够用
@@ -227,7 +219,9 @@ extension PoAVPlayerControlView: PoAVPlayerDelegate {
     func avplayer(_ player: PoAVPlayer, periodicallyInvoke time: CMTime) {
         let current = time.seconds
         let duration = player.duration
-        playedProgress.value = Float(current / duration)
+        if !progress.isTouching {
+            progress.sliderValue = Float(current / duration)
+        }
         currentTimeLabel.text = formartDuration(current)
     }
     
