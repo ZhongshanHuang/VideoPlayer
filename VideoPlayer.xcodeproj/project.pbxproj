@@ -11,7 +11,6 @@
 		5B0C2B382203074D00FF2643 /* PoAVPlayerResourceCacheFileHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0C2B372203074D00FF2643 /* PoAVPlayerResourceCacheFileHandler.swift */; };
 		5B77714C221E84D3003A28B4 /* PoAVPlayerCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B77714B221E84D3003A28B4 /* PoAVPlayerCacheManager.swift */; };
 		5B7D96BB21F849CD00883650 /* PoAVPlayerSessionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B7D96BA21F849CD00883650 /* PoAVPlayerSessionDelegate.swift */; };
-		5B9B37AB222E585B007556A6 /* BaseNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9B37AA222E585B007556A6 /* BaseNavigationController.swift */; };
 		5B9B37AD222FF767007556A6 /* PoProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9B37AC222FF767007556A6 /* PoProgressView.swift */; };
 		5BE8C05121EF12EE00128341 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BE8C05021EF12EE00128341 /* AppDelegate.swift */; };
 		5BE8C05321EF12EE00128341 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BE8C05221EF12EE00128341 /* ViewController.swift */; };
@@ -31,7 +30,6 @@
 		5B0C2B372203074D00FF2643 /* PoAVPlayerResourceCacheFileHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoAVPlayerResourceCacheFileHandler.swift; sourceTree = "<group>"; };
 		5B77714B221E84D3003A28B4 /* PoAVPlayerCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoAVPlayerCacheManager.swift; sourceTree = "<group>"; };
 		5B7D96BA21F849CD00883650 /* PoAVPlayerSessionDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoAVPlayerSessionDelegate.swift; sourceTree = "<group>"; };
-		5B9B37AA222E585B007556A6 /* BaseNavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseNavigationController.swift; sourceTree = "<group>"; };
 		5B9B37AC222FF767007556A6 /* PoProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoProgressView.swift; sourceTree = "<group>"; };
 		5BE8C04D21EF12EE00128341 /* VideoPlayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoPlayer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BE8C05021EF12EE00128341 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -81,7 +79,6 @@
 				5BE8C06221EF133A00128341 /* PoVideoPlayer */,
 				5BE8C05021EF12EE00128341 /* AppDelegate.swift */,
 				5BE8C05221EF12EE00128341 /* ViewController.swift */,
-				5B9B37AA222E585B007556A6 /* BaseNavigationController.swift */,
 				5BE8C05421EF12EE00128341 /* Main.storyboard */,
 				5BE8C05721EF12F100128341 /* Assets.xcassets */,
 				5BE8C05921EF12F100128341 /* LaunchScreen.storyboard */,
@@ -180,7 +177,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5B9B37AB222E585B007556A6 /* BaseNavigationController.swift in Sources */,
 				5BE8C05321EF12EE00128341 /* ViewController.swift in Sources */,
 				5B77714C221E84D3003A28B4 /* PoAVPlayerCacheManager.swift in Sources */,
 				5BE8C07021F614F400128341 /* PoAVPlayerResourceLoader.swift in Sources */,

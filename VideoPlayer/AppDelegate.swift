@@ -20,8 +20,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window = UIWindow(frame: UIScreen.main.bounds)
         window?.backgroundColor = UIColor.white
         
-        let nav = BaseNavigationController(rootViewController: ViewController())
-        window?.rootViewController = nav
+        window?.rootViewController = ViewController()
         window?.makeKeyAndVisible()
         
         return true
