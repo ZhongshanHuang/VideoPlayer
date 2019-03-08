@@ -2,10 +2,10 @@
 This is a tool that can cache the data while playing remote video.
 
 # Environment
-xcode: 10.2 beta4
+xcode: 10.2 beta4  
 swift: 5.0
 
-![播放界面](https://github.com/ZhongshanHuang/VideoPlayer/raw/master/Docs/shot.png)
+<img src="https://github.com/ZhongshanHuang/VideoPlayer/raw/master/Docs/shot.png" width="50%" height="50%">
 
 # 使用方法
 
