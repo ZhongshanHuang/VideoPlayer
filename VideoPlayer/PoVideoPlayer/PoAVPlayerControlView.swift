@@ -18,7 +18,7 @@ class PoAVPlayerControlView: UIView {
     private let topToolBar = UIView()
     private let titleLabel: UILabel = UILabel()
     
-    private let activityIndicator: UIActivityIndicatorView = UIActivityIndicatorView(style: .white)
+    private let activityIndicator: UIActivityIndicatorView = UIActivityIndicatorView(style: .whiteLarge)
     
     private let bottomToolBar = UIView()
     private let currentTimeLabel: UILabel = UILabel()

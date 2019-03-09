@@ -78,7 +78,7 @@ class PoProgressView: UIControl {
     override func draw(_ rect: CGRect) {
         guard let context = UIGraphicsGetCurrentContext() else { return }
         
-        let lineWidth: CGFloat = 4
+        let lineWidth: CGFloat = 2
         let width = bounds.width - thumbRadius * 2
         let centerY = bounds.height / 2
         
@@ -126,11 +126,15 @@ class PoProgressView: UIControl {
         defer { context.restoreGState() }
         
         let sliderX = CGFloat(sliderValue) * width
-        thumbRect = CGRect(x: sliderX, y: centerY - thumbRadius, width: thumbRadius * 2, height: thumbRadius * 2)
+        let radius = isTouching ? thumbRadius * 1.3 : thumbRadius
+        thumbRect = CGRect(x: sliderX, y: centerY - radius, width: radius * 2, height: radius * 2)
         context.addEllipse(in: thumbRect)
         context.setFillColor(thumbTintColor.cgColor)
-        context.setShadow(offset: CGSize(width: 2, height: 2), blur: 4)
+        context.setShadow(offset: CGSize(width: 2, height: 2), blur: 12)
         context.fillPath()
+        context.setStrokeColor(UIColor.gray.cgColor)
+        context.setLineWidth(1)
+        context.strokePath()
     }
     
 }
@@ -141,6 +145,7 @@ extension PoProgressView {
         let point = touches.first!.location(in: self)
         if thumbRect.contains(point) {
             isTouching = true
+            setNeedsDisplay()
         }
     }
     
@@ -164,12 +169,14 @@ extension PoProgressView {
                 sendActions(for: .valueChanged)
             }
             isTouching = false
+            setNeedsDisplay()
         }
     }
     
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         if isTouching {
             isTouching = false
+            setNeedsDisplay()
         }
     }
 }

@@ -93,13 +93,13 @@
 				5B0C2B352202D61A00FF2643 /* FragmentArray.swift */,
 				5BE8C06D21F6102E00128341 /* String+extension.swift */,
 				5BE8C06321EF136D00128341 /* PoAVPlayer.swift */,
-				5BE8C06521EF7F5900128341 /* PoAVPlayerControlView.swift */,
 				5BE8C06B21F60D1400128341 /* PoAVPlayerResourceLoaderDelegate.swift */,
 				5BE8C06F21F614F400128341 /* PoAVPlayerResourceLoader.swift */,
 				5BE8C07221F6E38E00128341 /* PoAVPlayerResourceRequestTask.swift */,
 				5B7D96BA21F849CD00883650 /* PoAVPlayerSessionDelegate.swift */,
 				5B0C2B372203074D00FF2643 /* PoAVPlayerResourceCacheFileHandler.swift */,
 				5B77714B221E84D3003A28B4 /* PoAVPlayerCacheManager.swift */,
+				5BE8C06521EF7F5900128341 /* PoAVPlayerControlView.swift */,
 				5B9B37AC222FF767007556A6 /* PoProgressView.swift */,
 			);
 			path = PoVideoPlayer;

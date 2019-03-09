@@ -52,6 +52,36 @@ class PoAVPlayerCacheManager {
         return FileManager.default // 线程安全的
     }
     
+    func deleteAllFiles(completion: ((Error?) -> Void)? = nil) {
+        PoAVPlayerCacheManager.ioQueue.async {
+            do {
+                try self.fileManager.removeItem(atPath: PoAVPlayerCacheManager.cacheDomainDirectory())
+            } catch let error {
+                completion?(error)
+            }
+            completion?(nil)
+        }
+    }
+    
+    // MARK: - delete single file
+    func deleteFile(by key: String, completion: ((Error?) -> Void)? = nil) {
+        
+        PoAVPlayerCacheManager.ioQueue.async {
+            if let indexPath = PoAVPlayerCacheManager.indexFilePath(for: key) {
+                do {
+                    try self.fileManager.removeItem(atPath: indexPath)
+                    if let dataPath = PoAVPlayerCacheManager.dataFilePath(for: key) {
+                        try self.fileManager.removeItem(atPath: dataPath)
+                    }
+                } catch let error {
+                    completion?(error)
+                }
+            }
+            completion?(nil)
+        }
+    }
+    
+    // MARK: - delete olderFiles
     @objc
     private func deleteOlderFiles() {
         deleteOlderFiles(with: nil)
@@ -71,13 +101,12 @@ class PoAVPlayerCacheManager {
                 self.backgroundTaskId = .invalid
             }
         }
-        
     }
     
     
     /// SDImageCache 借鉴
     private func deleteOlderFiles(with completion: (() -> Void)?) {
-        let cachePath = URL(fileURLWithPath: "", isDirectory: true)
+        let cachePath = URL(fileURLWithPath: PoAVPlayerCacheManager.cacheDomainDirectory(), isDirectory: true)
         let resourceKeys: [URLResourceKey] = [.isDirectoryKey, .contentModificationDateKey, .totalFileAllocatedSizeKey]
         let fileEnumerator = fileManager.enumerator(at: cachePath, includingPropertiesForKeys: resourceKeys, options: [.skipsHiddenFiles], errorHandler: nil)!
         let expirationDate = Date(timeIntervalSinceNow: -maxCacheAge)
@@ -144,4 +173,79 @@ class PoAVPlayerCacheManager {
         }
     }
     
+}
+
+// MARK: - Path Helper
+
+let kCacheDomainName = "/com.avplayercaches.po"
+extension PoAVPlayerCacheManager {
+    
+    static func cacheDomainDirectory() -> String {
+        var path = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first!
+        path += kCacheDomainName
+        if !FileManager.default.fileExists(atPath: path) {
+            do {
+                try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil)
+            } catch (let error) {
+                fatalError("PoAVPlayerResourceCacheFileHandler init error: [\(error.localizedDescription)].")
+            }
+        }
+        return path
+    }
+    
+    static func indexFilePath(for key: String) -> String? {
+        let path = cacheDomainDirectory() + "/\(key.md5).index"
+        if !FileManager.default.fileExists(atPath: path) {
+            return nil
+        }
+        return path
+    }
+    
+    static func indexFileURL(for key: String) -> URL? {
+        if let path = indexFilePath(for: key) {
+            return URL(fileURLWithPath: path)
+        }
+        return nil
+    }
+    
+    static func indexFilePathCreateIfNotExist(for key: String) -> URL {
+        let path = cacheDomainDirectory() + "/\(key.md5).index"
+        if !FileManager.default.fileExists(atPath: path) {
+            let defaultJSON = """
+                {"mimeType":null,"fragments":[],"expectedLength":-1}
+            """
+            let success = FileManager.default.createFile(atPath: path, contents: defaultJSON.data(using: .utf8), attributes: nil)
+            if !success {
+                fatalError("PoAVPlayerResourceCacheFileHandler create index file fail.")
+            }
+        }
+        return URL(fileURLWithPath: path)
+    }
+    
+    static func dataFilePath(for key: String) -> String? {
+        let path = cacheDomainDirectory() + "/\(key.md5)"
+        if !FileManager.default.fileExists(atPath: path) {
+           return nil
+        }
+        return path
+    }
+    
+    static func dataFileURL(for key: String) -> URL? {
+        if let path = dataFilePath(for: key) {
+            return URL(fileURLWithPath: path)
+        }
+        return nil
+    }
+    
+    static func dataFilePathCreateIfNotExist(for key: String) -> String {
+        let path = cacheDomainDirectory() + "/\(key.md5)"
+        if !FileManager.default.fileExists(atPath: path) {
+            let success = FileManager.default.createFile(atPath: path, contents: nil, attributes: nil)
+            if !success {
+                fatalError("PoAVPlayerResourceCacheFileHandler create data file fail.")
+            }
+        }
+        return path
+    }
+
 }

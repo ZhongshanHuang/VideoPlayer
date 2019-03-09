@@ -9,7 +9,7 @@
 import Foundation
 
 
-let kCacheDomainName = "/com.avplayercaches.po"
+//let kCacheDomainName = "/com.avplayercaches.po"
 
 class PoAVPlayerResourceCacheFileHandler {
     
@@ -20,11 +20,12 @@ class PoAVPlayerResourceCacheFileHandler {
     private lazy var writeHandle: FileHandle = FileHandle(forWritingAtPath: self.dataFilePath)!
     private lazy var readHandle: FileHandle = FileHandle(forReadingAtPath: self.dataFilePath)!
     
+    
     init(resourceIdentifier: URL) {
-        let sourceId = resourceIdentifier.absoluteString.md5
+        let key = resourceIdentifier.absoluteString
         
-        self.indexFilePath = PoAVPlayerResourceCacheFileHandler.indexFilePath(for: sourceId)
-        self.dataFilePath = PoAVPlayerResourceCacheFileHandler.dataFilePath(for: sourceId)
+        self.indexFilePath = PoAVPlayerCacheManager.indexFilePathCreateIfNotExist(for: key)
+        self.dataFilePath = PoAVPlayerCacheManager.dataFilePathCreateIfNotExist(for: key)
         do {
             let data = try Data(contentsOf: indexFilePath)
             cacheInfo = try JSONDecoder().decode(CacheInfo.self, from: data)
@@ -79,50 +80,6 @@ class PoAVPlayerResourceCacheFileHandler {
         } catch (let error) {
             fatalError("CacheInfo encode fail: \(error.localizedDescription)")
         }
-    }
-}
-
-
-// MARK: - Path helper
-
-extension PoAVPlayerResourceCacheFileHandler {
-    
-    static func cacheDomainDirectory() -> String {
-        var path = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first!
-        path += kCacheDomainName
-        if !FileManager.default.fileExists(atPath: path) {
-            do {
-                try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil)
-            } catch (let error) {
-                fatalError("PoAVPlayerResourceCacheFileHandler init error: [\(error.localizedDescription)].")
-            }
-        }
-        return path
-    }
-    
-    static func indexFilePath(for key: String) -> URL {
-        let path = cacheDomainDirectory() + "/\(key).index"
-        if !FileManager.default.fileExists(atPath: path) {
-            let defaultJSON = """
-                {"mimeType":null,"fragments":[],"expectedLength":-1}
-            """
-            let success = FileManager.default.createFile(atPath: path, contents: defaultJSON.data(using: .utf8), attributes: nil)
-            if !success {
-                fatalError("PoAVPlayerResourceCacheFileHandler create index file fail.")
-            }
-        }
-        return URL(fileURLWithPath: path)
-    }
-    
-    static func dataFilePath(for key: String) -> String {
-        let path = cacheDomainDirectory() + "/\(key)"
-        if !FileManager.default.fileExists(atPath: path) {
-            let success = FileManager.default.createFile(atPath: path, contents: nil, attributes: nil)
-            if !success {
-                fatalError("PoAVPlayerResourceCacheFileHandler create data file fail.")
-            }
-        }
-        return path
     }
 }
 

@@ -171,7 +171,6 @@ class PoAVPlayer: UIView {
         playerItem?.addObserver(self, forKeyPath: "loadedTimeRanges", options: [.new], context: nil)
         playerItem?.addObserver(self, forKeyPath: "status", options: [.new], context: nil)
         playerItem?.addObserver(self, forKeyPath: "playbackBufferEmpty", options: [.new], context: nil)
-        playerItem?.addObserver(self, forKeyPath: "playbackBufferFull", options: [.new], context: nil)
         playerItem?.addObserver(self, forKeyPath: "playbackLikelyToKeepUp", options: [.new], context: nil)
     }
     
@@ -179,7 +178,6 @@ class PoAVPlayer: UIView {
         playerItem?.removeObserver(self, forKeyPath: "loadedTimeRanges")
         playerItem?.removeObserver(self, forKeyPath: "status")
         playerItem?.removeObserver(self, forKeyPath: "playbackBufferEmpty")
-        playerItem?.removeObserver(self, forKeyPath: "playbackBufferFull")
         playerItem?.removeObserver(self, forKeyPath: "playbackLikelyToKeepUp")
     }
     
@@ -194,10 +192,8 @@ class PoAVPlayer: UIView {
         } else if keyPath == "status" {
             delegate?.avplayer(self, playerItemStatusChanged: playerItem.status)
         } else if keyPath == "playbackBufferEmpty" {
-            print(keyPath!)
             delegate?.avplayer(self, playbackBufferStatus: .empty)
-        } else if keyPath == "playbackBufferFull" || keyPath == "playbackLikelyToKeepUp" {
-            print(keyPath!)
+        } else if keyPath == "playbackLikelyToKeepUp" {
             delegate?.avplayer(self, playbackBufferStatus: .full)
         }
     }

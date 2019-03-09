@@ -16,18 +16,6 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view, typically from a nib.
     
         playerTest()
-        view.backgroundColor = UIColor.green
-        
-//        let progress = PoProgressView(frame: CGRect(x: 20, y: 100, width: view.bounds.width - 40, height: 30))
-//        progress.progressValue = 0.3
-//        progress.sliderValue = 0
-//        progress.backgroundColor = UIColor.yellow
-//        progress.addTarget(self, action: #selector(valueChange(_:)), for: .valueChanged)
-//        view.addSubview(progress)
-    }
-    
-    @objc func valueChange(_ sender: PoProgressView) {
-        print(sender.sliderValue)
     }
     
     // avplayer Test
@@ -40,7 +28,6 @@ class ViewController: UIViewController {
         view.addSubview(player)
 
         let urlArray = ["http://www.w3school.com.cn/example/html5/mov_bbb.mp4",
-                        "https://www.w3schools.com/html/movie.mp4",
                         "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4",
                         "https://media.w3.org/2010/05/sintel/trailer.mp4",
                         "http://mvvideo2.meitudata.com/576bc2fc91ef22121.mp4",
