@@ -57,6 +57,14 @@ class PoAVPlayer: UIView {
         return player.status == .readyToPlay
     }
     
+    var isPlaying: Bool {
+        if #available(iOS 10.0, *) {
+            return player.timeControlStatus != .paused
+        } else {
+            return player.rate == 0
+        }
+    }
+    
     private var isPlayingBeforeResignActive: Bool = false
     
     private lazy var player: AVPlayer = AVPlayer(playerItem: nil)
@@ -154,14 +162,9 @@ class PoAVPlayer: UIView {
         
         let seconds = (playItem.duration.seconds - timeInterval) > 0 ? timeInterval : playItem.duration.seconds
         if let completionHandler = completionHandler {
-            player.seek(to: CMTime(seconds: floor(seconds), preferredTimescale: 1),
-                        toleranceBefore: CMTime(seconds: 1, preferredTimescale: 1),
-                        toleranceAfter: CMTime(seconds: 1, preferredTimescale: 1),
-                        completionHandler: completionHandler)
+            player.seek(to: CMTime(seconds: seconds, preferredTimescale: 600), completionHandler: completionHandler)
         } else {
-            player.seek(to: CMTime(seconds: floor(seconds), preferredTimescale: 1),
-                        toleranceBefore: CMTime(seconds: 1, preferredTimescale: 1),
-                        toleranceAfter: CMTime(seconds: 1, preferredTimescale: 1))
+            player.seek(to: CMTime(seconds: seconds, preferredTimescale: 600))
         }
     }
     
@@ -221,11 +224,7 @@ class PoAVPlayer: UIView {
     
     @objc
     private func appResignActive() {
-        if #available(iOS 10.0, *) {
-            isPlayingBeforeResignActive = (player.timeControlStatus != .paused)
-        } else {
-            isPlayingBeforeResignActive = (player.rate == 0)
-        }
+        isPlayingBeforeResignActive = isPlaying
         if isPlayingBeforeResignActive {
             player.pause()
         }

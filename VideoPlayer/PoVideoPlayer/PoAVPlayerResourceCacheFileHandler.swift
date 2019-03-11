@@ -45,8 +45,10 @@ class PoAVPlayerResourceCacheFileHandler {
     
     /// save data
     func saveData(_ data: Data, at fileOffset: UInt64) {
-        writeHandle.seek(toFileOffset: fileOffset)
-        writeHandle.write(data)
+        PoAVPlayerCacheManager.ioQueue.async {
+            self.writeHandle.seek(toFileOffset: fileOffset)
+            self.writeHandle.write(data)
+        }
     }
     
     /// read data
@@ -74,11 +76,13 @@ class PoAVPlayerResourceCacheFileHandler {
     // MARK: - Synchronize
     
     func synchronize() {
-        do {
-            let data = try JSONEncoder().encode(cacheInfo)
-            try data.write(to: indexFilePath)
-        } catch (let error) {
-            fatalError("CacheInfo encode fail: \(error.localizedDescription)")
+        PoAVPlayerCacheManager.ioQueue.async {
+            do {
+                let data = try JSONEncoder().encode(self.cacheInfo)
+                try data.write(to: self.indexFilePath)
+            } catch (let error) {
+                fatalError("CacheInfo encode fail: \(error.localizedDescription)")
+            }
         }
     }
 }

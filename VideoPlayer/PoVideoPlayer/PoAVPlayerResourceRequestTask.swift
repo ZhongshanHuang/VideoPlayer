@@ -53,24 +53,26 @@ class PoAVPlayerResourceRequestLocalTask: PoAVPlayerResourceRequestTask {
     
     // MARK: - Properties
     unowned let fileHandler: PoAVPlayerResourceCacheFileHandler
-    unowned let queue: DispatchQueue
     
-    init(fileHandler: PoAVPlayerResourceCacheFileHandler, requestRange: NSRange, queue: DispatchQueue) {
+    init(fileHandler: PoAVPlayerResourceCacheFileHandler, requestRange: NSRange) {
         self.fileHandler = fileHandler
-        self.queue = queue
         super.init(requestRange: requestRange)
     }
     
     
     override func start() {
         super.start()
-        queue.async {
+        DispatchQueue.global().async {
             self.loadLocalData()
         }
     }
     
     private func loadLocalData() {
-        if isCancelled { isCancelled = true; return }
+        if isCancelled {
+            isFinished = true;
+            let error = NSError(domain: "local task", code: -1, userInfo: [NSLocalizedDescriptionKey: "local task cacelled"])
+            self.delegate?.requestTask(self, didCompleteWithError: error)
+        }
         
         self.delegate?.requestTask(self, didReceiveResponse: fileHandler.response)
         let upperBound = self.requestRange.upperBound
@@ -84,7 +86,13 @@ class PoAVPlayerResourceRequestLocalTask: PoAVPlayerResourceRequestTask {
                 currentOffset += length
             }
         }
-        self.delegate?.requestTask(self, didCompleteWithError: nil)
+        
+        if isCancelled {
+            let error = NSError(domain: "local task", code: -1, userInfo: [NSLocalizedDescriptionKey: "local task cacelled"])
+            self.delegate?.requestTask(self, didCompleteWithError: error)
+        } else {
+            self.delegate?.requestTask(self, didCompleteWithError: nil)
+        }
         isFinished = true
     }
     

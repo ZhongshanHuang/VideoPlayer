@@ -26,7 +26,7 @@ class PoAVPlayerControlView: UIView {
     private let playButton: UIButton = UIButton()
     private let fullScreenButton: UIButton = UIButton()
     private let progress: PoProgressView = PoProgressView()
-    
+    private var isIgnorePeriod: Bool = false
     
     init(player: PoAVPlayer) {
         self.player = player
@@ -155,16 +155,20 @@ class PoAVPlayerControlView: UIView {
     
     @objc
     private func progressChangeHandle(_ sender: PoProgressView) {
-        if player.isReadyToPlay {
-            let target = Double(sender.sliderValue) * player.duration
-
+        let target = Double(sender.sliderValue) * player.duration
+        
+        let isPlaying = player.isPlaying
+        if isPlaying {
             player.pause()
             playButton.isSelected = false
-            player.seekToTime(target) { (finished) in
-                if finished {
-                    self.player.play()
-                    self.playButton.isSelected = true
-                }
+            isIgnorePeriod = true
+        }
+        
+        player.seekToTime(target) { (finished) in
+            if finished && isPlaying {
+                self.player.play()
+                self.playButton.isSelected = true
+                self.isIgnorePeriod = false
             }
         }
     }
@@ -219,7 +223,7 @@ extension PoAVPlayerControlView: PoAVPlayerDelegate {
     func avplayer(_ player: PoAVPlayer, periodicallyInvoke time: CMTime) {
         let current = time.seconds
         let duration = player.duration
-        if !progress.isTouching {
+        if !progress.isTouching && !isIgnorePeriod {
             progress.sliderValue = Float(current / duration)
         }
         currentTimeLabel.text = formartDuration(current)

@@ -13,15 +13,20 @@ class PoAVPlayerSessionDelegate: NSObject {
     
     // MARK: - Properties
     
-    var timeout: TimeInterval = 15
     private var tasks: [URLSessionTask: PoAVPlayerResourceRequestRemoteTask] = [:]
-    private lazy var session: URLSession = URLSession(configuration: .default, delegate: self, delegateQueue: nil)
+    private lazy var session: URLSession = {
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = 15
+        let session = URLSession(configuration: configuration, delegate: self, delegateQueue: nil)
+        return session
+    }()
     
     
     // MARK: - Convenience Initializator
     
     func remoteDataTask(with url: URL, requestRange: NSRange) -> PoAVPlayerResourceRequestRemoteTask {
         var urlRequest = URLRequest(url: url)
+        urlRequest.httpShouldUsePipelining = true
         urlRequest.setValue(correctRange(requestRange), forHTTPHeaderField: "Range")
         let dataTask = session.dataTask(with: urlRequest)
         let remoteTask = PoAVPlayerResourceRequestRemoteTask(task: dataTask, requestRange: requestRange)
@@ -77,12 +82,8 @@ extension PoAVPlayerSessionDelegate: URLSessionDataDelegate {
             return
         }
         if response.statusCode < 400 && response.statusCode != 304 {
-            
             if response.mimeType?.contains("video") == true || response.mimeType?.contains("audio") == true {
-                PoAVPlayerCacheManager.ioQueue.async {
-                    task.delegate?.requestTask(task, didReceiveResponse: response)
-                }
-//                task.delegate?.requestTask(task, didReceiveResponse: response)
+                task.delegate?.requestTask(task, didReceiveResponse: response)
             }
             completionHandler(.allow)
         } else {
@@ -92,27 +93,16 @@ extension PoAVPlayerSessionDelegate: URLSessionDataDelegate {
     
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
         guard let task = task(for: dataTask) else { return }
-        PoAVPlayerCacheManager.ioQueue.async {
-            task.delegate?.requestTask(task, didReceiveData: data)
-            task.currentOffset += data.count
-        }
 
-//        task.delegate?.requestTask(task, didReceiveData: data)
-//        task.currentOffset += data.count
+        task.delegate?.requestTask(task, didReceiveData: data)
+        task.currentOffset += data.count
     }
     
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        PoAVPlayerCacheManager.ioQueue.async {
-            if let task = self.task(for: task) {
-                task.delegate?.requestTask(task, didCompleteWithError: error)
-            }
-            self.remove(task: task)
+        if let task = self.task(for: task) {
+            task.delegate?.requestTask(task, didCompleteWithError: error)
         }
-
-//        if let task = self.task(for: task) {
-//            task.delegate?.requestTask(task, didCompleteWithError: error)
-//        }
-//        remove(task: task)
+        remove(task: task)
     }
     
 }

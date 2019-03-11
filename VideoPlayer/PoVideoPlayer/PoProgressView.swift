@@ -14,6 +14,7 @@ class PoProgressView: UIControl {
     var progressValue: Float {
         get { return _progressValue }
         set {
+            if newValue.isNaN { return }
             if abs(newValue - _progressValue) < 0.01 { return }
             if newValue < 0 {
                 if _progressValue == 0 { return }
@@ -32,6 +33,7 @@ class PoProgressView: UIControl {
     var sliderValue: Float {
         get { return _sliderValue }
         set {
+            if newValue.isNaN { return }
             if abs(newValue - _sliderValue) < 0.01 { return }
             if newValue < 0 {
                 _sliderValue = 0
@@ -44,16 +46,16 @@ class PoProgressView: UIControl {
         }
     }
     
-    var backgroundTintColor: UIColor = UIColor.white {
+    var backgroundTintColor: UIColor = UIColor.darkGray {
         didSet { setNeedsDisplay() }
     }
-    var progressTintColor: UIColor = UIColor.gray {
+    var progressTintColor: UIColor = UIColor.white {
         didSet { setNeedsDisplay() }
     }
-    var sliderTintColor: UIColor = UIColor.blue {
+    var sliderTintColor: UIColor = UIColor.red {
         didSet { setNeedsDisplay() }
     }
-    var thumbTintColor: UIColor = UIColor.red {
+    var thumbTintColor: UIColor = UIColor.white {
         didSet { setNeedsDisplay() }
     }
     private var thumbRect: CGRect = .zero
@@ -78,7 +80,7 @@ class PoProgressView: UIControl {
     override func draw(_ rect: CGRect) {
         guard let context = UIGraphicsGetCurrentContext() else { return }
         
-        let lineWidth: CGFloat = 2
+        let lineWidth: CGFloat = 1
         let width = bounds.width - thumbRadius * 2
         let centerY = bounds.height / 2
         
@@ -130,13 +132,11 @@ class PoProgressView: UIControl {
         thumbRect = CGRect(x: sliderX, y: centerY - radius, width: radius * 2, height: radius * 2)
         context.addEllipse(in: thumbRect)
         context.setFillColor(thumbTintColor.cgColor)
-        context.setShadow(offset: CGSize(width: 2, height: 2), blur: 12)
         context.fillPath()
         context.setStrokeColor(UIColor.gray.cgColor)
         context.setLineWidth(1)
         context.strokePath()
     }
-    
 }
 
 extension PoProgressView {
