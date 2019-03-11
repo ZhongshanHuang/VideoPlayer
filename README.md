@@ -5,9 +5,9 @@ This is a tool that can cache the data while playing remote video.
 xcode: 10.2 beta4  
 swift: 5.0
 
-<img src="https://github.com/ZhongshanHuang/VideoPlayer/raw/master/Docs/shot.png" width="50%" height="50%">
+<img src="https://github.com/ZhongshanHuang/VideoPlayer/raw/master/Docs/shot.png" width="30%" height="30%">
 
-<img src="https://github.com/ZhongshanHuang/VideoPlayer/raw/master/Docs/architecture.png" width="50%" height="50%">
+<img src="https://github.com/ZhongshanHuang/VideoPlayer/raw/master/Docs/architecture.png" width="80%" height="80%">
 
 # Usage
 
