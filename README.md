@@ -7,7 +7,9 @@ swift: 5.0
 
 <img src="https://github.com/ZhongshanHuang/VideoPlayer/raw/master/Docs/shot.png" width="50%" height="50%">
 
-# 使用方法
+<img src="https://github.com/ZhongshanHuang/VideoPlayer/raw/master/Docs/architecture.png" width="50%" height="50%">
+
+# Usage
 
 ``` swift
 func playerTest() {

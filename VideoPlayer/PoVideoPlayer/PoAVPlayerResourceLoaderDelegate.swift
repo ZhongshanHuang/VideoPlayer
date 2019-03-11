@@ -13,12 +13,7 @@ let kScheme = "__PoAVPlayerScheme__"
 
 class PoAVPlayerResourceLoaderDelegate: NSObject {
     
-    /// singleton
-    static let shared: PoAVPlayerResourceLoaderDelegate = PoAVPlayerResourceLoaderDelegate()
-    private override init() {}
-    
     // MARK: - Properties
-    
     private lazy var loadingRequests: [URL: PoAVPlayerResourceLoader] = [:]
 }
 
@@ -34,6 +29,7 @@ extension PoAVPlayerResourceLoaderDelegate: AVAssetResourceLoaderDelegate {
             if let loader = loadingRequests[url] {
                 loader.appending(loadingRequest)
             } else {
+                loadingRequests.removeAll() // 释放之前地址的loader对象
                 let urlStr = url.absoluteString[kScheme.endIndex...]
                 let originalUrl = URL(string: String(urlStr))!
                 let loader = PoAVPlayerResourceLoader(resourceIdentifier: originalUrl)
@@ -49,7 +45,7 @@ extension PoAVPlayerResourceLoaderDelegate: AVAssetResourceLoaderDelegate {
     func resourceLoader(_ resourceLoader: AVAssetResourceLoader, didCancel loadingRequest: AVAssetResourceLoadingRequest) {
         let offset = loadingRequest.dataRequest!.requestedOffset
         let length = loadingRequest.dataRequest!.requestedLength
-        print("\(Date()) request取消: [\(offset) ~ \(offset + Int64(length))]")
+        debugPrint("\(Date()) request取消: [\(offset) ~ \(offset + Int64(length))]")
         if let url = loadingRequest.request.url, let loader = loadingRequests[url] {
             loader.cancel(loadingRequest)
             if loader.isEmpty {

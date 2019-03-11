@@ -66,10 +66,11 @@ class PoAVPlayer: UIView {
     }
     
     private var isPlayingBeforeResignActive: Bool = false
-    
     private lazy var player: AVPlayer = AVPlayer(playerItem: nil)
     private var playerItem: AVPlayerItem?
     private var timeObserver: Any?
+    private lazy var loaderDelegate: PoAVPlayerResourceLoaderDelegate = PoAVPlayerResourceLoaderDelegate()
+    
     
     // MARK: - Override
     
@@ -127,7 +128,7 @@ class PoAVPlayer: UIView {
         if needCache {
             let url = URL(string: kScheme + url.absoluteString)!
             let urlAsset = AVURLAsset(url: url)
-            urlAsset.resourceLoader.setDelegate(PoAVPlayerResourceLoaderDelegate.shared, queue: DispatchQueue.main)
+            urlAsset.resourceLoader.setDelegate(loaderDelegate, queue: DispatchQueue.main)
             item = AVPlayerItem(asset: urlAsset)
         } else {
             item = AVPlayerItem(url: url)
