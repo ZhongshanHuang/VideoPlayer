@@ -69,7 +69,7 @@ extension PoAVPlayerSessionDelegate: URLSessionDataDelegate {
             let card = URLCredential(trust: challenge.protectionSpace.serverTrust!)
             completionHandler(.useCredential, card)
         } else {
-            completionHandler(.cancelAuthenticationChallenge, nil)
+            completionHandler(.performDefaultHandling, nil)
         }
     }
     
