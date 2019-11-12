@@ -8,9 +8,6 @@
 
 import Foundation
 
-
-//let kCacheDomainName = "/com.avplayercaches.po"
-
 class PoAVPlayerResourceCacheFileHandler {
     
     let indexFilePath: URL

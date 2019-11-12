@@ -44,7 +44,7 @@ class PoAVPlayerResourceLoader {
     }
     
     deinit {
-        debugPrint("load die")
+        debugPrint("loader die")
     }
     
     // MARK: - Methods
