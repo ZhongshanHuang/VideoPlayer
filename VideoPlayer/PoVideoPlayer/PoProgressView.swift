@@ -58,8 +58,8 @@ class PoProgressView: UIControl {
     var thumbTintColor: UIColor = UIColor.white {
         didSet { setNeedsDisplay() }
     }
-    private var thumbRect: CGRect = .zero
-    private var thumbRadius: CGFloat = 8
+    private var _thumbRect: CGRect = .zero
+    private var _thumbRadius: CGFloat = 8
     
     var isContinuous: Bool = true
     var isTouching: Bool = false
@@ -81,7 +81,7 @@ class PoProgressView: UIControl {
         guard let context = UIGraphicsGetCurrentContext() else { return }
         
         let lineWidth: CGFloat = 1
-        let width = bounds.width - thumbRadius * 2
+        let width = bounds.width - _thumbRadius * 2
         let centerY = bounds.height / 2
         
         let value = CGFloat(1 - max(progressValue, sliderValue)) * width
@@ -89,8 +89,8 @@ class PoProgressView: UIControl {
             context.saveGState()
             defer { context.restoreGState() }
             
-            let startPoint = CGPoint(x: CGFloat(max(progressValue, sliderValue)) * width + thumbRadius, y: centerY)
-            let endPoint = CGPoint(x: width + thumbRadius, y: centerY)
+            let startPoint = CGPoint(x: CGFloat(max(progressValue, sliderValue)) * width + _thumbRadius, y: centerY)
+            let endPoint = CGPoint(x: width + _thumbRadius, y: centerY)
             context.setStrokeColor(backgroundTintColor.cgColor)
             context.move(to: startPoint)
             context.addLine(to: endPoint)
@@ -102,8 +102,8 @@ class PoProgressView: UIControl {
             context.saveGState()
             defer { context.restoreGState() }
             
-            let startPoint = CGPoint(x: CGFloat(sliderValue) * width + thumbRadius, y: centerY)
-            let endPoint = CGPoint(x: CGFloat(progressValue) * width + thumbRadius, y: centerY)
+            let startPoint = CGPoint(x: CGFloat(sliderValue) * width + _thumbRadius, y: centerY)
+            let endPoint = CGPoint(x: CGFloat(progressValue) * width + _thumbRadius, y: centerY)
             context.setStrokeColor(progressTintColor.cgColor)
             context.move(to: startPoint)
             context.addLine(to: endPoint)
@@ -115,8 +115,8 @@ class PoProgressView: UIControl {
             context.saveGState()
             defer { context.restoreGState() }
             
-            let startPoint = CGPoint(x: thumbRadius, y: centerY)
-            let endPoint = CGPoint(x: CGFloat(sliderValue) * width + thumbRadius, y: centerY)
+            let startPoint = CGPoint(x: _thumbRadius, y: centerY)
+            let endPoint = CGPoint(x: CGFloat(sliderValue) * width + _thumbRadius, y: centerY)
             context.setStrokeColor(sliderTintColor.cgColor)
             context.move(to: startPoint)
             context.addLine(to: endPoint)
@@ -128,9 +128,9 @@ class PoProgressView: UIControl {
         defer { context.restoreGState() }
         
         let sliderX = CGFloat(sliderValue) * width
-        let radius = isTouching ? thumbRadius * 1.3 : thumbRadius
-        thumbRect = CGRect(x: sliderX, y: centerY - radius, width: radius * 2, height: radius * 2)
-        context.addEllipse(in: thumbRect)
+        let radius = isTouching ? _thumbRadius * 1.3 : _thumbRadius
+        _thumbRect = CGRect(x: sliderX, y: centerY - radius, width: radius * 2, height: radius * 2)
+        context.addEllipse(in: _thumbRect)
         context.setFillColor(thumbTintColor.cgColor)
         context.fillPath()
         context.setStrokeColor(UIColor.gray.cgColor)
@@ -143,17 +143,24 @@ extension PoProgressView {
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         let point = touches.first!.location(in: self)
-        if thumbRect.contains(point) {
+        if _thumbRect.contains(point) {
             isTouching = true
             setNeedsDisplay()
+        } else {
+            let point = touches.first!.location(in: self)
+            let value = point.x
+            let newValue = Float(value / (bounds.width - _thumbRadius * 2))
+            if abs(newValue - _sliderValue) < 0.01 { return }
+            sliderValue = newValue
+            sendActions(for: .valueChanged)
         }
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         if isTouching {
             let point = touches.first!.location(in: self)
-            let value = point.x - thumbRadius
-            let newValue = Float(value / (bounds.width - thumbRadius * 2))
+            let value = point.x - _thumbRadius
+            let newValue = Float(value / (bounds.width - _thumbRadius * 2))
             if newValue < -0.01 || newValue > 1.01 { return }
             if abs(newValue - _sliderValue) < 0.01 { return }
             sliderValue = newValue
