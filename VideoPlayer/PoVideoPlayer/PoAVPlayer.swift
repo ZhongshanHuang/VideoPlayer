@@ -49,28 +49,30 @@ class PoAVPlayer: UIView {
     
     weak var delegate: PoAVPlayerDelegate?
     
-    var duration: Double {
-        return playerItem?.duration.seconds ?? -1
+    /// seconds
+    var duration: Double? {
+        return _playerItem?.duration.seconds
     }
     
+    /// 当前是否可以播放
     var isReadyToPlay: Bool {
-        return player.status == .readyToPlay
+        return _player.status == .readyToPlay
     }
     
+    /// 是否播放中
     var isPlaying: Bool {
         if #available(iOS 10.0, *) {
-            return player.timeControlStatus != .paused
+            return _player.timeControlStatus != .paused
         } else {
-            return player.rate == 0
+            return _player.rate == 0
         }
     }
     
-    private var isPlayingBeforeResignActive: Bool = false
-    private lazy var player: AVPlayer = AVPlayer(playerItem: nil)
-    private var playerItem: AVPlayerItem?
-    private var timeObserver: Any?
-    private lazy var loaderDelegate: PoAVPlayerResourceLoaderDelegate = PoAVPlayerResourceLoaderDelegate()
-    
+    private lazy var _player: AVPlayer = AVPlayer(playerItem: nil)
+    private var _playerItem: AVPlayerItem?
+    private var _timeObserver: Any?
+    private lazy var _loaderDelegate: PoAVPlayerResourceLoaderDelegate = PoAVPlayerResourceLoaderDelegate()
+    private var _isPlayingBeforeResignActive: Bool = false
     
     // MARK: - Override
     
@@ -93,8 +95,8 @@ class PoAVPlayer: UIView {
     }
     
     private func _setup() {
-        (self.layer as! AVPlayerLayer).player = player
-        timeObserver = player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 1),
+        (self.layer as! AVPlayerLayer).player = _player
+        _timeObserver = _player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 600),
                                                       queue: DispatchQueue.main) { [weak self] (time) in
             guard let strongSelf = self else { return }
             strongSelf.delegate?.avplayer(strongSelf, periodicallyInvoke: time)
@@ -103,15 +105,17 @@ class PoAVPlayer: UIView {
     }
     
     deinit {
-        if let timeObserver = timeObserver {
-            player.removeTimeObserver(timeObserver)
+        if let timeObserver = _timeObserver {
+            _player.removeTimeObserver(timeObserver)
         }
-        _removeObserver(for: playerItem)
+        _removeObserver(for: _playerItem)
         _removeNotification()
-        player.pause()
-        player.currentItem?.cancelPendingSeeks()
-        player.currentItem?.asset.cancelLoading()
+        _player.pause()
+        _player.currentItem?.cancelPendingSeeks()
+        _player.currentItem?.asset.cancelLoading()
     }
+    
+    // MARK: - Public Method
     
     /// 添加视频播放控制层
     func addControlLayer<T: UIView & PoAVPlayerDelegate>(_ layer: T) {
@@ -122,13 +126,17 @@ class PoAVPlayer: UIView {
         addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|[layer]|", options: [], metrics: nil, views: ["layer": layer]))
     }
     
-    /// 播放视频
+    
+    /// 播放url对应的音/视频文件
+    /// - Parameters:
+    ///   - url: 音/视频文件地址
+    ///   - needCache: 是否需要缓存本地
     func play(with url: URL, needCache: Bool = false) {
         var item: AVPlayerItem
         if needCache {
             let url = URL(string: kScheme + url.absoluteString)!
             let urlAsset = AVURLAsset(url: url)
-            urlAsset.resourceLoader.setDelegate(loaderDelegate, queue: DispatchQueue.main)
+            urlAsset.resourceLoader.setDelegate(_loaderDelegate, queue: DispatchQueue.main)
             item = AVPlayerItem(asset: urlAsset)
         } else {
             item = AVPlayerItem(url: url)
@@ -136,36 +144,44 @@ class PoAVPlayer: UIView {
         play(with: item)
     }
     
+    
+    /// 播放item中的音/视频文件，无法缓存本地
+    /// - Parameter item: item
     private func play(with item: AVPlayerItem) {
-        _removeObserver(for: playerItem)
+        _removeObserver(for: _playerItem)
         _addObserver(for: item)
-        playerItem = item
-        player.replaceCurrentItem(with: playerItem)
+        _playerItem = item
+        _player.replaceCurrentItem(with: _playerItem)
     }
     
     /// 播放
     func play() {
-        if player.status != .readyToPlay { return }
-        player.play()
+        if _player.status != .readyToPlay { return }
+        _player.play()
     }
     
     /// 暂停
     func pause() {
-        player.pause()
+        if _player.status != .readyToPlay { return }
+        _player.pause()
     }
     
-    /// 跳转
+    
+    /// 跳转到指定时间点
+    /// - Parameters:
+    ///   - timeInterval: 新的时间点(单位秒)
+    ///   - completionHandler: 跳转完成后执行
     func seekToTime(_ timeInterval: TimeInterval, completionHandler: ((Bool) -> Void)? = nil) {
-        guard let playItem = playerItem else {
+        guard let playItem = _playerItem else {
             completionHandler?(false)
             return
         }
         
-        let seconds = (playItem.duration.seconds - timeInterval) > 0 ? timeInterval : playItem.duration.seconds
+        let seconds = playItem.duration.seconds > timeInterval ? timeInterval : playItem.duration.seconds
         if let completionHandler = completionHandler {
-            player.seek(to: CMTime(seconds: seconds, preferredTimescale: 600), completionHandler: completionHandler)
+            _player.seek(to: CMTime(seconds: seconds, preferredTimescale: 600), completionHandler: completionHandler)
         } else {
-            player.seek(to: CMTime(seconds: seconds, preferredTimescale: 600))
+            _player.seek(to: CMTime(seconds: seconds, preferredTimescale: 600))
         }
     }
     
@@ -206,15 +222,15 @@ class PoAVPlayer: UIView {
     
     private func _addNotification() {
         NotificationCenter.default.addObserver(self,
-                                               selector: #selector(appResignActive),
+                                               selector: #selector(_appResignActive),
                                                name: UIApplication.willResignActiveNotification,
                                                object: nil)
         NotificationCenter.default.addObserver(self,
-                                               selector: #selector(appBecomeActive),
+                                               selector: #selector(_appBecomeActive),
                                                name: UIApplication.didBecomeActiveNotification,
                                                object: nil)
         NotificationCenter.default.addObserver(self,
-                                               selector: #selector(playerItemDidPlayToEndTime),
+                                               selector: #selector(_playerItemDidPlayToEndTime),
                                                name: NSNotification.Name.AVPlayerItemDidPlayToEndTime,
                                                object: nil)
     }
@@ -224,22 +240,22 @@ class PoAVPlayer: UIView {
     }
     
     @objc
-    private func appResignActive() {
-        isPlayingBeforeResignActive = isPlaying
-        if isPlayingBeforeResignActive {
-            player.pause()
+    private func _appResignActive() {
+        _isPlayingBeforeResignActive = isPlaying
+        if _isPlayingBeforeResignActive {
+            _player.pause()
         }
     }
     
     @objc
-    private func appBecomeActive() {
-        if isPlayingBeforeResignActive {
-            player.play()
+    private func _appBecomeActive() {
+        if _isPlayingBeforeResignActive {
+            _player.play()
         }
     }
     
     @objc
-    private func playerItemDidPlayToEndTime() {
+    private func _playerItemDidPlayToEndTime() {
         delegate?.avplayerDidPlayToEndTime(self)
     }
 }

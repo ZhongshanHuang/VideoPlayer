@@ -37,13 +37,12 @@ extension FragmentArray {
                 storage[index - 1].length += storage[index].length
                 storage.remove(at: index)
             }
-            return
         } else if index < count && storage[index].location == newElement.upperBound {
             storage[index - 1].length += storage[index].length
             storage.remove(at: index)
-            return
+        } else {
+            storage.insert(newElement, at: index)
         }
-        storage.insert(newElement, at: index)
     }
     
     /// 查找element的索引

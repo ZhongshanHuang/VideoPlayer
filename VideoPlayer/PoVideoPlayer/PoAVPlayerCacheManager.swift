@@ -211,9 +211,13 @@ extension PoAVPlayerCacheManager {
     static func indexFilePathCreateIfNotExist(for key: String) -> URL {
         let path = cacheDomainDirectory() + "/\(key.md5).index"
         if !FileManager.default.fileExists(atPath: path) {
-            let defaultJSON = """
-                {"mimeType":null,"fragments":[],"expectedLength":-1}
-            """
+            let defaultJSON = #"""
+                {
+                    "mimeType": null,
+                    "fragments": [],
+                    "expectedLength": -1
+                }
+            """#
             let success = FileManager.default.createFile(atPath: path, contents: defaultJSON.data(using: .utf8), attributes: nil)
             if !success {
                 fatalError("PoAVPlayerResourceCacheFileHandler create index file fail.")

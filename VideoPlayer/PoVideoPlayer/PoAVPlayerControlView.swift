@@ -11,7 +11,7 @@ import AVFoundation
 
 class PoAVPlayerControlView: UIView {
     
-    unowned var player: PoAVPlayer
+    unowned(unsafe) var player: PoAVPlayer
     
     private(set) var isPlayToEndTime: Bool = false
     
@@ -126,11 +126,10 @@ class PoAVPlayerControlView: UIView {
         // 总时长
         durationTimeLabel.frame = CGRect(x: fullScreenButton.frame.minX - padding - 60, y: y, width: 60, height: size.height)
         
-        // 已缓冲进度
+        // 缓冲进度
         let width: CGFloat = bounds.width - padding - playButton.bounds.width - padding - currentTimeLabel.bounds.width - padding - padding - durationTimeLabel.bounds.width - padding - fullScreenButton.bounds.width - padding
         
         progress.frame = CGRect(x: currentTimeLabel.frame.maxX + padding, y: (bottomToolBar.bounds.height - 20)/2, width: width, height: 20)
-//        playedProgress.frame = CGRect(x: currentTimeLabel.frame.maxX + padding, y: (bottomToolBar.bounds.height - 60)/2, width: width, height: 60)
     }
     
     // MARK: - selector
@@ -155,7 +154,7 @@ class PoAVPlayerControlView: UIView {
     
     @objc
     private func progressChangeHandle(_ sender: PoProgressView) {
-        let target = Double(sender.sliderValue) * player.duration
+        guard let duration = player.duration else { return }
         
         let isPlaying = player.isPlaying
         if isPlaying {
@@ -164,6 +163,7 @@ class PoAVPlayerControlView: UIView {
             isIgnorePeriod = true
         }
         
+        let target = Double(sender.sliderValue) *  duration
         player.seekToTime(target) { (finished) in
             if finished && isPlaying {
                 self.player.play()
@@ -196,16 +196,16 @@ extension PoAVPlayerControlView: PoAVPlayerDelegate {
     func avplayer(_ player: PoAVPlayer, playerItemStatusChanged status: AVPlayerItem.Status) {
         switch status {
         case .readyToPlay:
-            durationTimeLabel.text = formartDuration(player.duration)
+            durationTimeLabel.text = formartDuration(player.duration!)
         default:
-            debugPrint("player item can't be played")
+            debugPrint("player item can't be played. status: \(status)")
         }
     }
     
     /// 缓冲到了哪儿
     func avplayer(_ player: PoAVPlayer, loadedTimeRange range: CMTimeRange) {
         let loaded = range.end.seconds
-        let duration = player.duration
+        let duration = player.duration!
         progress.progressValue = Float(loaded / duration)
     }
     
@@ -222,7 +222,7 @@ extension PoAVPlayerControlView: PoAVPlayerDelegate {
     /// 播放时周期性回调
     func avplayer(_ player: PoAVPlayer, periodicallyInvoke time: CMTime) {
         let current = time.seconds
-        let duration = player.duration
+        let duration = player.duration!
         if !progress.isTouching && !isIgnorePeriod {
             progress.sliderValue = Float(current / duration)
         }

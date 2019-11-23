@@ -44,15 +44,15 @@ class PoAVPlayerResourceLoader {
     }
     
     deinit {
+        requestTasks.forEach { (task) in
+            task.cancel()
+        }
         debugPrint("loader die")
     }
     
     // MARK: - Methods
     
     func appending(_ request: AVAssetResourceLoadingRequest) {
-        let lower = Int(request.dataRequest!.requestedOffset)
-        let upper = request.dataRequest!.requestedLength
-        debugPrint("\(Date()) request发起: [\(lower) ~ \(upper + lower)]-----------------\(upper)")
         lock.wait()
         requests.append(request)
         lock.signal()
@@ -64,9 +64,6 @@ class PoAVPlayerResourceLoader {
         if let index = self.requests.firstIndex(of: request) {
             let request = self.requests[index]
             if request == self.runningRequest {
-                if let task = requestTasks.first {
-                    debugPrint("\(Date()) 取消task: [\(task.requestRange.location) ~ \(task.requestRange.upperBound)]")
-                }
                 self.requestTasks.first?.cancel()
             } else {
                 self.requests.remove(at: index)
@@ -99,16 +96,14 @@ class PoAVPlayerResourceLoader {
         while offset < upper {
             if let cachedRange = fileHandler.firstCachedFragment(in: NSRange(location: offset, length: upper - offset)) {
                 if offset < cachedRange.location {
-                    let remoteTask = sessionDelegate.remoteDataTask(with: resourceIdentifier, requestRange: NSRange(location: offset, length: cachedRange.location - 1))
+                    let remoteTask = sessionDelegate.remoteDataTask(with: resourceIdentifier, requestRange: NSRange(location: offset, length: cachedRange.location - offset))
                     requestTasks.append(remoteTask)
                     let localTask = PoAVPlayerResourceRequestLocalTask(fileHandler: fileHandler, requestRange: cachedRange)
                     requestTasks.append(localTask)
-                    
                     offset = cachedRange.upperBound
                 } else {
                     let localTask = PoAVPlayerResourceRequestLocalTask(fileHandler: fileHandler, requestRange: cachedRange)
                     requestTasks.append(localTask)
-    
                     offset = cachedRange.upperBound
                 }
             } else {
@@ -123,9 +118,6 @@ class PoAVPlayerResourceLoader {
     
     private func startHandleNextTask() {
         if requestTasks.isEmpty {
-            let lower = Int(runningRequest!.dataRequest!.requestedOffset)
-            let upper = runningRequest!.dataRequest!.requestedLength
-            debugPrint("\(Date()) request完成: [\(lower) ~ \(upper + lower)]")
             requests.removeFirst()
             runningRequest?.finishLoading()
             runningRequest = nil
@@ -133,7 +125,6 @@ class PoAVPlayerResourceLoader {
         } else {
             requestTasks.first?.delegate = self
             requestTasks.first?.start()
-            debugPrint("\(Date()) 发起task: [\(requestTasks.first!.requestRange.location) ~ \(requestTasks.first!.requestRange.upperBound)]")
         }
     }
 
@@ -196,9 +187,7 @@ extension PoAVPlayerResourceLoader: PoAVPlayerResourceRequestTaskDelegate {
         if task is PoAVPlayerResourceRequestRemoteTask {
             fileHandler.synchronize()
         }
-        debugPrint("\(Date()) 完成task: [\(task.requestRange.location) ~ \(task.requestRange.upperBound)]")
         if error != nil {
-            debugPrint("\(Date()) task错误: \(error!.localizedDescription)")
             requestTasks.removeAll()
             lock.wait()
             requests.removeFirst()
