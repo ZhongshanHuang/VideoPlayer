@@ -27,6 +27,7 @@ class PoAVPlayerSessionDelegate: NSObject {
     func remoteDataTask(with url: URL, requestRange: NSRange) -> PoAVPlayerResourceRequestRemoteTask {
         var urlRequest = URLRequest(url: url)
         urlRequest.httpShouldUsePipelining = true
+        urlRequest.cachePolicy = .reloadIgnoringLocalCacheData
         urlRequest.setValue(correctRange(requestRange), forHTTPHeaderField: "Range")
         let dataTask = session.dataTask(with: urlRequest)
         let remoteTask = PoAVPlayerResourceRequestRemoteTask(task: dataTask, requestRange: requestRange)
