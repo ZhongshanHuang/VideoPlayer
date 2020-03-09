@@ -164,6 +164,7 @@ class PoAVPlayerControlView: UIView {
         }
         
         let target = Double(sender.sliderValue) *  duration
+        print(target)
         player.seekToTime(target) { (finished) in
             if finished && isPlaying {
                 self.player.play()
@@ -198,7 +199,7 @@ extension PoAVPlayerControlView: PoAVPlayerDelegate {
         case .readyToPlay:
             durationTimeLabel.text = formartDuration(player.duration!)
         default:
-            debugPrint("player item can't be played. status: \(status)")
+            debugPrint("player item can't be played. status: \(status.rawValue)")
         }
     }
     

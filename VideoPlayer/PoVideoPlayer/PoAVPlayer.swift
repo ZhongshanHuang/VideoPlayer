@@ -41,6 +41,8 @@ extension PoAVPlayer {
         case full
         case empty
     }
+    
+    static let scheme = "__PoAVPlayerScheme__"
 }
 
 class PoAVPlayer: UIView {
@@ -134,7 +136,7 @@ class PoAVPlayer: UIView {
     func play(with url: URL, needCache: Bool = false) {
         var item: AVPlayerItem
         if needCache {
-            let url = URL(string: kScheme + url.absoluteString)!
+            let url = URL(string: PoAVPlayer.scheme + url.absoluteString)!
             let urlAsset = AVURLAsset(url: url)
             urlAsset.resourceLoader.setDelegate(_loaderDelegate, queue: DispatchQueue.main)
             item = AVPlayerItem(asset: urlAsset)

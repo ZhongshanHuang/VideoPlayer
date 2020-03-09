@@ -9,12 +9,19 @@
 import Foundation
 import AVFoundation
 
-let kScheme = "__PoAVPlayerScheme__"
+class PoAVPlayerResourceLoaderDelegate: NSObject {}
 
-class PoAVPlayerResourceLoaderDelegate: NSObject {
-    
-    // MARK: - Properties
-    private lazy var loadingRequests: [URL: PoAVPlayerResourceLoader] = [:]
+private var pResourceLoaderKey: Void?
+
+extension AVAssetResourceLoader {
+    var pResourceLoader: PoAVPlayerResourceLoader? {
+        get {
+            return objc_getAssociatedObject(self, &pResourceLoaderKey) as? PoAVPlayerResourceLoader
+        }
+        set {
+            objc_setAssociatedObject(self, &pResourceLoaderKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        }
+    }
 }
 
 
@@ -25,17 +32,15 @@ extension PoAVPlayerResourceLoaderDelegate: AVAssetResourceLoaderDelegate {
     
     /// avasset遇到系统无法处理的url时会调用此方法
     func resourceLoader(_ resourceLoader: AVAssetResourceLoader, shouldWaitForLoadingOfRequestedResource loadingRequest: AVAssetResourceLoadingRequest) -> Bool {
-        if let url = loadingRequest.request.url, url.absoluteString.hasPrefix(kScheme) {
-            if let loader = loadingRequests[url] {
-                loader.appending(loadingRequest)
-            } else {
-                loadingRequests.removeAll() // 释放之前地址的loader对象
-                let urlStr = url.absoluteString[kScheme.endIndex...]
-                let originalUrl = URL(string: String(urlStr))!
-                let loader = PoAVPlayerResourceLoader(resourceIdentifier: originalUrl)
-                loader.appending(loadingRequest)
-                loadingRequests[url] = loader
-            }
+        if resourceLoader.pResourceLoader != nil {
+            resourceLoader.pResourceLoader?.appending(request: loadingRequest)
+            return true
+        } else if let url = loadingRequest.request.url, url.absoluteString.hasPrefix(PoAVPlayer.scheme) {
+            let urlStr = url.absoluteString[PoAVPlayer.scheme.endIndex...]
+            guard let originalUrl = URL(string: String(urlStr)) else { return false }
+            let loader = PoAVPlayerResourceLoader(resourceIdentifier: originalUrl)
+            loader.appending(request: loadingRequest)
+            resourceLoader.pResourceLoader = loader
             return true
         }
         return false
@@ -43,11 +48,6 @@ extension PoAVPlayerResourceLoaderDelegate: AVAssetResourceLoaderDelegate {
     
     /// 当数据加载完成或者播放跳转到到别的时间时会调用此方法
     func resourceLoader(_ resourceLoader: AVAssetResourceLoader, didCancel loadingRequest: AVAssetResourceLoadingRequest) {
-        if let url = loadingRequest.request.url, let loader = loadingRequests[url] {
-            loader.cancel(loadingRequest)
-            if loader.isEmpty {
-                loadingRequests.removeValue(forKey: url)
-            }
-        }
+        resourceLoader.pResourceLoader?.cancel(loadingRequest)
     }
 }

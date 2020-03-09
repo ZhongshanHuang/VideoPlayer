@@ -18,7 +18,7 @@ class ViewController: UIViewController {
     
     // avplayer Test
     func playerTest() {
-//        PoAVPlayerCacheManager.shared.deleteAllFiles()
+        PoAVPlayerCacheManager.shared.deleteAllFiles()
         
         // avplayer是显示层
         let player = PoAVPlayer(frame: view.bounds)

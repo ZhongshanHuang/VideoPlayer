@@ -52,7 +52,7 @@ class PoAVPlayerResourceLoader {
     
     // MARK: - Methods
     
-    func appending(_ request: AVAssetResourceLoadingRequest) {
+    func appending(request: AVAssetResourceLoadingRequest) {
         lock.wait()
         requests.append(request)
         lock.signal()
@@ -63,7 +63,7 @@ class PoAVPlayerResourceLoader {
         lock.wait()
         if let index = self.requests.firstIndex(of: request) {
             let request = self.requests[index]
-            if request == self.runningRequest {
+            if request === self.runningRequest {
                 self.requestTasks.first?.cancel()
             } else {
                 self.requests.remove(at: index)
