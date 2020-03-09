@@ -46,7 +46,7 @@ extension PoAVPlayerResourceLoaderDelegate: AVAssetResourceLoaderDelegate {
         return false
     }
     
-    /// 当数据加载完成或者播放跳转到到别的时间时会调用此方法
+    /// 当播放跳转到别的时间时会调用此方法
     func resourceLoader(_ resourceLoader: AVAssetResourceLoader, didCancel loadingRequest: AVAssetResourceLoadingRequest) {
         resourceLoader.pResourceLoader?.cancel(loadingRequest)
     }
